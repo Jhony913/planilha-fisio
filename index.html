@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Planilha Fisioterapia (Offline)</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f2f2f2; }
+    input, textarea { width: 100%; }
+    button { padding: 6px 12px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>Registro de Atendimentos</h2>
+
+  <label>Nome do Paciente:</label>
+  <input type="text" id="paciente" placeholder="Ex: João Silva">
+
+  <label>Valor por Atendimento:</label>
+  <input type="number" id="valor" placeholder="Ex: 120">
+
+  <label>Relatório de Evolução:</label>
+  <textarea id="relatorio" placeholder="Resumo do progresso..."></textarea>
+
+  <button onclick="registrarAtendimento()">Atendimento Realizado</button>
+  <button onclick="limparDados()">Limpar Todos os Dados</button>
+
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Paciente</th>
+        <th>Valor (R$)</th>
+        <th>Relatório</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let atendimentos = [];
+
+    // Carrega dados salvos
+    window.onload = () => {
+      const salvos = localStorage.getItem("atendimentos");
+      if (salvos) {
+        atendimentos = JSON.parse(salvos);
+        atendimentos.forEach(addLinhaNaTabela);
+      }
+    };
+
+    function registrarAtendimento() {
+      const nome = document.getElementById('paciente').value.trim();
+      const valor = document.getElementById('valor').value.trim();
+      const relatorio = document.getElementById('relatorio').value.trim();
+      const data = new Date().toLocaleDateString('pt-BR');
+
+      if (!nome || !valor) {
+        alert("Preencha o nome do paciente e o valor.");
+        return;
+      }
+
+      const atendimento = { data, nome, valor: parseFloat(valor), relatorio };
+      atendimentos.push(atendimento);
+      localStorage.setItem("atendimentos", JSON.stringify(atendimentos));
+
+      addLinhaNaTabela(atendimento);
+
+      document.getElementById('paciente').value = "";
+      document.getElementById('valor').value = "";
+      document.getElementById('relatorio').value = "";
+    }
+
+    function addLinhaNaTabela(atendimento) {
+      const tabela = document.getElementById('tabela').querySelector('tbody');
+      const novaLinha = tabela.insertRow();
+
+      novaLinha.innerHTML = `
+        <td>${atendimento.data}</td>
+        <td>${atendimento.nome}</td>
+        <td>R$ ${atendimento.valor.toFixed(2)}</td>
+        <td>${atendimento.relatorio}</td>
+      `;
+    }
+
+    function limparDados() {
+      if (confirm("Deseja apagar todos os registros salvos?")) {
+        localStorage.removeItem("atendimentos");
+        atendimentos = [];
+        document.querySelector("#tabela tbody").innerHTML = "";
+      }
+    }
+  </script>
+
+</body>
+</html>
